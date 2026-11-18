@@ -315,3 +315,120 @@ if ("speechSynthesis" in window) {
 
 console.log("JARVIS SYSTEM 1.0 — INITIALISÉ");
 
+/* =====================================
+   JARVIS — HOLOGRAMME 3D
+   ===================================== */
+
+const canvas = document.querySelector("#hologram");
+const ctx = canvas.getContext("2d");
+
+const particles = [];
+const PARTICLE_COUNT = 1000;
+
+let width = 0;
+let height = 0;
+let rotation = 0;
+
+function resizeHologram() {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  width = rect.width;
+  height = rect.height;
+
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function createParticles() {
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const y = 1 - (i / (PARTICLE_COUNT - 1)) * 2;
+    const radius = Math.sqrt(1 - y * y);
+    const angle = i * Math.PI * (3 - Math.sqrt(5));
+
+    particles.push({
+      x: Math.cos(angle) * radius,
+      y,
+      z: Math.sin(angle) * radius,
+      size: 0.5 + Math.random() * 1.4,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+
+function drawHologram() {
+  if (!canvas || !ctx) return;
+
+  ctx.clearRect(0, 0, width, height);
+
+  const speaking =
+    "speechSynthesis" in window &&
+    window.speechSynthesis.speaking;
+
+  const time = performance.now() / 1000;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const radius = Math.min(width, height) * 0.37;
+
+  rotation += speaking ? 0.009 : 0.0025;
+
+  const pulse = speaking
+    ? 1 + Math.abs(Math.sin(time * 9)) * 0.13
+    : 1 + Math.sin(time * 1.5) * 0.025;
+
+  const points = [];
+
+  for (const p of particles) {
+    const wobble = speaking
+      ? Math.sin(time * 12 + p.phase) * 0.035
+      : Math.sin(time * 2 + p.phase) * 0.008;
+
+    const spread = pulse + wobble;
+
+    const x = p.x * spread;
+    const y = p.y * spread;
+    const z = p.z * spread;
+
+    const rotatedX = x * Math.cos(rotation) - z * Math.sin(rotation);
+    const rotatedZ = x * Math.sin(rotation) + z * Math.cos(rotation);
+
+    const tilt = 0.22;
+    const rotatedY = y * Math.cos(tilt) - rotatedZ * Math.sin(tilt);
+    const finalZ = y * Math.sin(tilt) + rotatedZ * Math.cos(tilt);
+
+    const perspective = 2.5 / (2.5 - finalZ);
+
+    points.push({
+      x: centerX + rotatedX * radius * perspective,
+      y: centerY + rotatedY * radius * perspective,
+      z: finalZ,
+      size: p.size * perspective,
+      alpha: Math.max(0.12, (finalZ + 1.5) / 2.5)
+    });
+  }
+
+  points.sort((a, b) => a.z - b.z);
+
+  for (const p of points) {
+    const glow = speaking ? 0.65 : 0.35;
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(40, 170, 255, ${p.alpha})`;
+    ctx.shadowBlur = speaking ? 12 : 6;
+    ctx.shadowColor = `rgba(0, 150, 255, ${glow})`;
+    ctx.fill();
+  }
+
+  ctx.shadowBlur = 0;
+
+  requestAnimationFrame(drawHologram);
+}
+
+resizeHologram();
+createParticles();
+drawHologram();
+
+window.addEventListener("resize", resizeHologram);
