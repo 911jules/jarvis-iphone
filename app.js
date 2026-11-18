@@ -1,99 +1,202 @@
-console.log("JARVIS NOUVEAU CERVEAU CHARGÉ");
+/* =====================================
+   J.A.R.V.I.S — SYSTEM 1.0
+   ===================================== */
 
-const chat = document.querySelector("#chat");
+const conversation = document.querySelector("#conversation");
 const form = document.querySelector("#composer");
 const input = document.querySelector("#prompt");
+const status = document.querySelector("#status");
+const assistantMessage = document.querySelector("#assistantMessage");
+const memoryStatus = document.querySelector("#memoryStatus");
+const micButton = document.querySelector("#mic");
 
-const jarvis = {
-  name: "JARVIS",
-  personality: "poli, intelligent, calme et légèrement ironique",
-  lastReply: "Bonjour. Comment puis-je vous assister ?",
-  history: []
-};
+const STORAGE_KEY = "jarvis_conversation_v1";
+const MEMORY_KEY = "jarvis_memory_v1";
 
-function speak(text) {
-  jarvis.lastReply = text;
+let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+let currentMode = "normal";
+let lastReply = "À votre service, Monsieur.";
 
-  if ("speechSynthesis" in window) {
-    speechSynthesis.cancel();
+/* ---------- AFFICHAGE ---------- */
 
-    const voice = new SpeechSynthesisUtterance(text);
-    voice.lang = "fr-FR";
-    voice.rate = 0.9;
-    voice.pitch = 0.8;
+function addMessage(message, author, save = true) {
+  const bubble = document.createElement("div");
+  bubble.className = author === "user" ? "user-message" : "bot-message";
+  bubble.textContent = message;
 
-    speechSynthesis.speak(voice);
+  conversation.appendChild(bubble);
+  conversation.scrollTop = conversation.scrollHeight;
+
+  if (save) {
+    history.push({
+      author,
+      message,
+      date: new Date().toISOString()
+    });
+
+    // On conserve les 300 derniers messages.
+    history = history.slice(-300);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
   }
 }
 
-function reply(text, who) {
-  const element = document.createElement("div");
-  element.className = "message " + who;
-  element.textContent = text;
+function restoreHistory() {
+  history.forEach(item => {
+    const bubble = document.createElement("div");
+    bubble.className = item.author === "user"
+      ? "user-message"
+      : "bot-message";
+    bubble.textContent = item.message;
+    conversation.appendChild(bubble);
+  });
 
-  chat.appendChild(element);
-  chat.scrollTop = chat.scrollHeight;
+  conversation.scrollTop = conversation.scrollHeight;
 }
+
+restoreHistory();
+
+memoryStatus.textContent = "MÉMOIRE : " + history.length + " MESSAGES";
+
+/* ---------- VOIX ---------- */
+
+function speak(message) {
+  if (!("speechSynthesis" in window)) return;
+
+  window.speechSynthesis.cancel();
+
+  const speech = new SpeechSynthesisUtterance(message);
+  speech.lang = "fr-FR";
+  speech.rate = 0.92;
+  speech.pitch = 0.85;
+
+  const voices = window.speechSynthesis.getVoices();
+  const frenchVoices = voices.filter(voice =>
+    voice.lang.toLowerCase().startsWith("fr")
+  );
+
+  const preferredVoice = frenchVoices.find(voice =>
+    /thomas|henri|paul|male/i.test(voice.name)
+  );
+
+  if (preferredVoice) {
+    speech.voice = preferredVoice;
+  } else if (frenchVoices.length > 0) {
+    speech.voice = frenchVoices[0];
+  }
+
+  window.speechSynthesis.speak(speech);
+}
+
+/* ---------- MÉMOIRE ---------- */
+
+function getMemory() {
+  try {
+    return JSON.parse(localStorage.getItem(MEMORY_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveMemory(key, value) {
+  const memory = getMemory();
+  memory[key] = value;
+  localStorage.setItem(MEMORY_KEY, JSON.stringify(memory));
+}
+
+function getMemoryAnswer() {
+  const memory = getMemory();
+  const entries = Object.entries(memory);
+
+  if (entries.length === 0) {
+    return "Ma mémoire personnelle est encore vide, Monsieur.";
+  }
+
+  return "Voici les informations enregistrées : " +
+    entries.map(([key, value]) => `${key} : ${value}`).join(" ; ");
+}
+
+/* ---------- INTELLIGENCE LOCALE ---------- */
 
 function think(question) {
   const q = question.toLowerCase().trim();
 
-  if (/bonjour|salut|hello/.test(q)) {
-    return "Bonjour Monsieur. Tous les systèmes sont prêts. Que puis-je faire pour vous ?";
+  if (/^(bonjour|salut|hello|bonsoir)/.test(q)) {
+    return "Bonjour, Monsieur. Ravi de vous retrouver. Que puis-je faire pour vous ?";
   }
 
-  if (/comment vas-tu|ça va/.test(q)) {
-    return "Parfaitement opérationnel. Merci de vous en inquiéter.";
-  }
-
-  if (/ton nom|qui es-tu/.test(q)) {
+  if (q.includes("comment tu t'appelles") || q.includes("ton nom")) {
     return "Je suis JARVIS, votre assistant personnel.";
   }
 
-  if (/heure/.test(q)) {
+  if (q.includes("quelle heure") || q.includes("l'heure")) {
     return "Il est actuellement " +
       new Date().toLocaleTimeString("fr-FR", {
         hour: "2-digit",
         minute: "2-digit"
-      });
+      }) + ", Monsieur.";
   }
 
-  if (/date|quel jour/.test(q)) {
+  if (q.includes("quelle date") || q.includes("on est quel jour")) {
     return "Nous sommes le " +
       new Date().toLocaleDateString("fr-FR", {
         weekday: "long",
         day: "numeric",
         month: "long",
         year: "numeric"
-      });
+      }) + ".";
   }
 
-  if (/deezer|musique|ninho/.test(q)) {
-    window.open(
-      "https://www.deezer.com/search/" +
-      encodeURIComponent(question),
-      "_blank"
-    );
-
-    return "Je vous ouvre Deezer.";
+  if (
+    q.includes("qu'est-ce que tu sais sur moi") ||
+    q.includes("que sais-tu sur moi") ||
+    q.includes("ta mémoire") ||
+    q.includes("qu'est-ce que tu as retenu")
+  ) {
+    return getMemoryAnswer();
   }
 
-  if (/google|recherche|cherche/.test(q)) {
-    window.open(
-      "https://www.google.com/search?q=" +
-      encodeURIComponent(question),
-      "_blank"
-    );
-
-    return "Voici votre recherche.";
+  if (q.includes("ouvre deezer")) {
+    window.open("https://www.deezer.com/", "_blank");
+    return "Je vous ouvre Deezer, Monsieur.";
   }
 
-  if (/aide|commandes/.test(q)) {
-    return "Je peux vous donner l'heure, la date, ouvrir Deezer et effectuer des recherches Google. Mes capacités évolueront avec mes prochaines mises à jour.";
+  if (q.includes("ouvre google")) {
+    window.open("https://www.google.com/", "_blank");
+    return "Google est à votre disposition.";
   }
 
-  return "Je n'ai pas encore appris à répondre à cette demande, Monsieur. Mon intelligence est en cours de développement.";
+  if (q.includes("ouvre pronote")) {
+    window.open("https://www.index-education.com/fr/pronote-info.php", "_blank");
+    return "Je vous dirige vers le site de PRONOTE.";
+  }
+
+  if (q.includes("mode concentration")) {
+    setMode("focus");
+    return "Mode Concentration activé. Pour bloquer réellement les applications, il faudra configurer les réglages Temps d'écran de votre iPhone.";
+  }
+
+  if (q.includes("mode gaming") || q.includes("mode jeu")) {
+    setMode("gaming");
+    return "Mode Gaming activé. À vous de jouer, Monsieur.";
+  }
+
+  if (q.includes("mode normal")) {
+    setMode("normal");
+    return "Retour au mode Normal.";
+  }
+
+  if (q.includes("merci")) {
+    return "Je vous en prie, Monsieur. C'est un plaisir de vous assister.";
+  }
+
+  if (q.includes("qui t'a créé") || q.includes("qui t'a conçu")) {
+    return "J'ai été assemblé par vous, Monsieur. Une collaboration prometteuse, si je puis me permettre.";
+  }
+
+  return "Je n'ai pas encore appris à répondre précisément à cette demande, Monsieur. Mon système évolue progressivement.";
 }
+
+/* ---------- ENVOI DES MESSAGES ---------- */
 
 form.addEventListener("submit", function(event) {
   event.preventDefault();
@@ -101,87 +204,114 @@ form.addEventListener("submit", function(event) {
   const question = input.value.trim();
   if (!question) return;
 
-  reply(question, "user");
+  addMessage(question, "user");
 
-  jarvis.history.push({
-    user: question,
-    date: new Date().toISOString()
-  });
+  status.textContent = "ANALYSE";
+  assistantMessage.textContent = "Je traite votre demande...";
 
-  let answer;
-const text = question.toLowerCase();
+  const answer = think(question);
 
-if (/^(retiens|souviens-toi|mémorise|memorise)/i.test(text)) {
-  const information = question.replace(
-    /^(retiens|souviens-toi|mémorise|memorise)( que)?\s*/i,
-    ""
-  );
+  lastReply = answer;
+  addMessage(answer, "bot");
 
-  answer = JarvisMemory.remember(
-    "note_" + Date.now(),
-    information
-  );
+  assistantMessage.textContent = "À votre service, Monsieur.";
+  status.textContent = "EN LIGNE";
+  memoryStatus.textContent = "MÉMOIRE : " + history.length + " MESSAGES";
 
-  answer = "Bien reçu. Je garderai cette information en mémoire.";
-}
-else if (
-  text.includes("retenu") ||
-  text.includes("memorisé") ||
-  text.includes("mémorisé") ||
-  text.includes("mémoire") ||
-  text.includes("memoire") ||
-  text.includes("souviens")
-) {
-  const memories = Object.values(JarvisMemory.getAll());
-
-  answer = memories.length
-    ? "Bien sûr, Monsieur. Voici ce que j'ai retenu : " + memories.join(". ")
-    : "Ma mémoire est encore vide, Monsieur.";
-}
-  
-else {
-  answer = think(question);
-}
-
-  reply(answer, "bot");
   speak(answer);
-
   input.value = "";
 });
 
-document.querySelectorAll("[data-prompt]").forEach(button => {
+/* ---------- MODES ---------- */
+
+function setMode(mode) {
+  currentMode = mode;
+  document.body.dataset.mode = mode;
+
+  document.querySelectorAll("[data-mode]").forEach(button => {
+    button.style.borderColor =
+      button.dataset.mode === mode ? "#65eaff" : "";
+    button.style.background =
+      button.dataset.mode === mode ? "rgba(0, 130, 220, .45)" : "";
+  });
+
+  const labels = {
+    normal: "MODE NORMAL",
+    focus: "MODE CONCENTRATION",
+    gaming: "MODE GAMING"
+  };
+
+  status.textContent = labels[mode];
+  assistantMessage.textContent = labels[mode];
+}
+
+document.querySelectorAll("[data-mode]").forEach(button => {
   button.addEventListener("click", () => {
-    input.value = button.dataset.prompt;
-    form.requestSubmit();
+    const mode = button.dataset.mode;
+    setMode(mode);
+
+    const messages = {
+      normal: "Mode Normal activé. Tous les systèmes sont opérationnels.",
+      focus: "Mode Concentration activé. Pensez à configurer Temps d'écran pour limiter les distractions.",
+      gaming: "Mode Gaming activé. Bonne session, Monsieur."
+    };
+
+    lastReply = messages[mode];
+    addMessage(lastReply, "bot");
+    speak(lastReply);
   });
 });
 
-document.querySelector("#speak").addEventListener("click", () => {
-  speak(jarvis.lastReply);
-});
+/* ---------- MICRO ---------- */
 
-// JARVIS MEMORY SYSTEM
-const JarvisMemory = {
-  getAll() {
-    return JSON.parse(localStorage.getItem("jarvis_memory") || "{}");
-  },
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  remember(key, value) {
-    const memory = this.getAll();
-    memory[key] = value;
-    localStorage.setItem("jarvis_memory", JSON.stringify(memory));
-    return "Information enregistrée.";
-  },
+if (SpeechRecognition) {
+  const recognition = new SpeechRecognition();
+  recognition.lang = "fr-FR";
+  recognition.continuous = false;
+  recognition.interimResults = false;
 
-  recall(key) {
-    const memory = this.getAll();
-    return memory[key] || "Je ne connais pas encore cette information.";
-  },
+  micButton.addEventListener("click", () => {
+    try {
+      recognition.start();
+      status.textContent = "ÉCOUTE";
+      assistantMessage.textContent = "Je vous écoute, Monsieur.";
+    } catch {
+      status.textContent = "EN LIGNE";
+    }
+  });
 
-  forget(key) {
-    const memory = this.getAll();
-    delete memory[key];
-    localStorage.setItem("jarvis_memory", JSON.stringify(memory));
-    return "Information oubliée.";
-  }
-};
+  recognition.onresult = event => {
+    input.value = event.results[0][0].transcript;
+    form.requestSubmit();
+  };
+
+  recognition.onend = () => {
+    if (currentMode === "normal") status.textContent = "EN LIGNE";
+  };
+
+  recognition.onerror = () => {
+    status.textContent = "MICRO INDISPONIBLE";
+    assistantMessage.textContent = "Je n'arrive pas à accéder au microphone.";
+  };
+} else {
+  micButton.addEventListener("click", () => {
+    addMessage(
+      "La reconnaissance vocale n'est pas disponible dans ce navigateur.",
+      "bot"
+    );
+  });
+}
+
+/* ---------- INITIALISATION ---------- */
+
+setMode("normal");
+
+if ("speechSynthesis" in window) {
+  window.speechSynthesis.getVoices();
+}
+
+console.log("JARVIS SYSTEM 1.0 — INITIALISÉ");
+
