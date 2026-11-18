@@ -1,3 +1,4 @@
+console.log("JARVIS NOUVEAU CERVEAU CHARGÉ");
 
 const chat = document.querySelector("#chat");
 const form = document.querySelector("#composer");
