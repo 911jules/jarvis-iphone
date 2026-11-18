@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080d16">
+  <title>JARVIS</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <header><div class="orb">J</div><div><p class="eyebrow">SYSTÈME PERSONNEL</p><h1>J.A.R.V.I.S.</h1></div><span class="status">EN LIGNE</span></header>
+    <section class="hero"><p class="eyebrow">INTERFACE VOCALE</p><h2>Bonjour.</h2><p>En quoi puis-je vous assister aujourd'hui ?</p></section>
+    <section id="chat" class="chat" aria-live="polite">
+      <div class="message bot">Bonjour. Je suis votre prototype d'assistant. Que puis-je faire pour vous ?</div>
+    </section>
+    <form id="composer"><input id="prompt" autocomplete="off" placeholder="Écrivez votre demande…" aria-label="Votre demande"><button>Envoyer</button></form>
+    <div class="actions"><button data-prompt="Que peux-tu faire ?">Aide</button><button data-prompt="Quelle est la date du jour ?">Date</button><button id="speak">Lire la réponse</button></div>
+    <p class="note">Prototype local — les intégrations et l'intelligence en ligne seront ajoutées progressivement.</p>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
