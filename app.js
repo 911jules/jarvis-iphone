@@ -125,16 +125,20 @@ if (/^(retiens|souviens-toi|mémorise|memorise)/i.test(text)) {
   answer = "Bien reçu. Je garderai cette information en mémoire.";
 }
 else if (
-  text.includes("qu'as-tu retenu") ||
-  text.includes("qu'est-ce que tu as mémorisé") ||
-  text.includes("que sais-tu")
+  text.includes("retenu") ||
+  text.includes("memorisé") ||
+  text.includes("mémorisé") ||
+  text.includes("mémoire") ||
+  text.includes("memoire") ||
+  text.includes("souviens")
 ) {
   const memories = Object.values(JarvisMemory.getAll());
 
   answer = memories.length
-    ? "Voici ce que j'ai mémorisé : " + memories.join(". ")
-    : "Ma mémoire est encore vide.";
+    ? "Bien sûr, Monsieur. Voici ce que j'ai retenu : " + memories.join(". ")
+    : "Ma mémoire est encore vide, Monsieur.";
 }
+  
 else {
   answer = think(question);
 }
