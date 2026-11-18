@@ -1,11 +1,9 @@
 
 :root {
-  --blue: #19aaff;
+  --blue: #168dff;
   --cyan: #65eaff;
-  --background: #030813;
-  --panel: rgba(8, 24, 43, 0.78);
+  --background: #000000;
   --text: #e5f7ff;
-  --muted: #7195ad;
 }
 
 * {
@@ -16,9 +14,7 @@ body {
   margin: 0;
   min-height: 100vh;
   min-height: 100dvh;
-  background:
-    radial-gradient(ellipse at 50% 38%, #0a2540 0%, transparent 48%),
-    linear-gradient(160deg, #071321, #02050c 75%);
+  background: #000;
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   overflow-x: hidden;
@@ -72,79 +68,29 @@ button, input {
 }
 
 .visualizer {
-  min-height: 320px;
+  min-height: 350px;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+}
+
+.hologram-container {
+  width: min(90vw, 430px);
+  aspect-ratio: 1;
   position: relative;
 }
 
-.orb {
-  width: min(72vw, 310px);
-  height: min(72vw, 310px);
-  position: relative;
-  display: grid;
-  place-items: center;
-  filter: drop-shadow(0 0 28px rgba(0, 164, 255, .35));
-}
-
-.orb-core {
-  width: 42%;
-  height: 42%;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 38% 32%, #e1ffff, #59dfff 13%, #0876ca 42%, #04162e 75%);
-  box-shadow:
-    0 0 18px #26baff,
-    0 0 48px rgba(0, 153, 255, .8),
-    inset 0 0 25px #9df4ff;
-  animation: breathe 4s ease-in-out infinite;
-}
-
-.orb-ring {
-  position: absolute;
-  inset: 8%;
-  border: 1px solid rgba(50, 195, 255, .55);
-  border-radius: 50%;
-  box-shadow: 0 0 15px rgba(0, 170, 255, .2);
-}
-
-.ring-one {
-  animation: rotate 12s linear infinite;
-  border-style: dashed;
-}
-
-.ring-two {
-  inset: 1%;
-  border-color: rgba(38, 143, 255, .5);
-  animation: rotate-reverse 18s linear infinite;
-}
-
-.ring-three {
-  inset: 17%;
-  border-style: dotted;
-  animation: rotate 8s linear infinite;
-}
-
-.orb-particles {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background-image:
-    radial-gradient(circle, #75eaff 1px, transparent 2px),
-    radial-gradient(circle, #168fff 1px, transparent 2px);
-  background-size: 23px 27px, 37px 31px;
-  opacity: .7;
-  mask-image: radial-gradient(circle, transparent 25%, black 72%, transparent 100%);
-  -webkit-mask-image: radial-gradient(circle, transparent 25%, black 72%, transparent 100%);
-  animation: rotate 25s linear infinite;
+#hologram {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .assistant-name {
-  margin-top: 10px;
+  margin-top: 5px;
   font-size: 19px;
   letter-spacing: 8px;
   color: var(--cyan);
@@ -166,15 +112,11 @@ button, input {
 .modes button {
   padding: 12px 3px;
   color: #9ddfff;
-  background: rgba(12, 39, 63, .65);
+  background: #050d18;
   border: 1px solid rgba(48, 168, 255, .35);
   border-radius: 10px;
   font-size: 9px;
   letter-spacing: 1px;
-}
-
-.modes button:active {
-  background: rgba(0, 130, 220, .45);
 }
 
 .conversation {
@@ -184,7 +126,7 @@ button, input {
   padding: 13px;
   border: 1px solid rgba(49, 155, 222, .2);
   border-radius: 14px;
-  background: var(--panel);
+  background: #050a12;
   font-size: 13px;
   line-height: 1.6;
 }
@@ -210,7 +152,7 @@ button, input {
   border-radius: 14px;
   border: 1px solid rgba(47, 174, 255, .35);
   outline: none;
-  background: rgba(7, 25, 43, .9);
+  background: #050d18;
   color: white;
 }
 
@@ -223,7 +165,7 @@ button, input {
   height: 48px;
   border-radius: 14px;
   border: 1px solid rgba(46, 177, 255, .5);
-  background: #0a2540;
+  background: #07182b;
   color: white;
   font-size: 19px;
 }
@@ -238,49 +180,28 @@ button, input {
   letter-spacing: 1px;
 }
 
-@keyframes rotate {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes rotate-reverse {
-  to { transform: rotate(-360deg); }
-}
-
-@keyframes breathe {
-  50% { transform: scale(1.09); }
-}
-
 @keyframes pulse {
   50% { opacity: .35; }
 }
 
-body[data-mode="focus"] .orb-core {
-  animation-duration: 7s;
+.user-message {
+  color: #ffffff;
+  margin: 8px 0;
+  text-align: right;
 }
 
-body[data-mode="gaming"] .orb-core {
-  animation-duration: 1.5s;
-}
-
-body[data-mode="gaming"] .orb {
-  filter: drop-shadow(0 0 35px #007dff);
+.bot-message {
+  color: #65eaff;
+  margin: 8px 0;
+  text-align: left;
 }
 
 @media (max-height: 700px) {
   .visualizer {
-    min-height: 270px;
+    min-height: 280px;
   }
 
-  .orb {
-    width: min(58vw, 245px);
-    height: min(58vw, 245px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+  .hologram-container {
+    width: min(75vw, 320px);
   }
 }
-
