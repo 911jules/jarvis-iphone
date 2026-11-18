@@ -108,7 +108,36 @@ form.addEventListener("submit", function(event) {
     date: new Date().toISOString()
   });
 
-  const answer = think(question);
+  let answer;
+const text = question.toLowerCase();
+
+if (/^(retiens|souviens-toi|mémorise|memorise)/i.test(text)) {
+  const information = question.replace(
+    /^(retiens|souviens-toi|mémorise|memorise)( que)?\s*/i,
+    ""
+  );
+
+  answer = JarvisMemory.remember(
+    "note_" + Date.now(),
+    information
+  );
+
+  answer = "Bien reçu. Je garderai cette information en mémoire.";
+}
+else if (
+  text.includes("qu'as-tu retenu") ||
+  text.includes("qu'est-ce que tu as mémorisé") ||
+  text.includes("que sais-tu")
+) {
+  const memories = Object.values(JarvisMemory.getAll());
+
+  answer = memories.length
+    ? "Voici ce que j'ai mémorisé : " + memories.join(". ")
+    : "Ma mémoire est encore vide.";
+}
+else {
+  answer = think(question);
+}
 
   reply(answer, "bot");
   speak(answer);
