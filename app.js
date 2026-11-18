@@ -126,3 +126,29 @@ document.querySelectorAll("[data-prompt]").forEach(button => {
 document.querySelector("#speak").addEventListener("click", () => {
   speak(jarvis.lastReply);
 });
+
+// JARVIS MEMORY SYSTEM
+const JarvisMemory = {
+  getAll() {
+    return JSON.parse(localStorage.getItem("jarvis_memory") || "{}");
+  },
+
+  remember(key, value) {
+    const memory = this.getAll();
+    memory[key] = value;
+    localStorage.setItem("jarvis_memory", JSON.stringify(memory));
+    return "Information enregistrée.";
+  },
+
+  recall(key) {
+    const memory = this.getAll();
+    return memory[key] || "Je ne connais pas encore cette information.";
+  },
+
+  forget(key) {
+    const memory = this.getAll();
+    delete memory[key];
+    localStorage.setItem("jarvis_memory", JSON.stringify(memory));
+    return "Information oubliée.";
+  }
+};
