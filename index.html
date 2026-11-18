@@ -1,25 +1,82 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#080d16">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#050b18">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="JARVIS">
+
   <title>JARVIS</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="icon" href="icon.svg">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <main class="shell">
-    <header><div class="orb">J</div><div><p class="eyebrow">SYSTÈME PERSONNEL</p><h1>J.A.R.V.I.S.</h1></div><span class="status">EN LIGNE</span></header>
-    <section class="hero"><p class="eyebrow">INTERFACE VOCALE</p><h2>Bonjour.</h2><p>En quoi puis-je vous assister aujourd'hui ?</p></section>
-    <section id="chat" class="chat" aria-live="polite">
-      <div class="message bot">Bonjour. Je suis votre prototype d'assistant. Que puis-je faire pour vous ?</div>
+  <main class="app">
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="status-dot"></span>
+        J.A.R.V.I.S
+      </div>
+      <div class="status" id="status">EN VEILLE</div>
+    </header>
+
+    <section class="visualizer">
+      <div class="orb" id="orb">
+        <div class="orb-ring ring-one"></div>
+        <div class="orb-ring ring-two"></div>
+        <div class="orb-ring ring-three"></div>
+        <div class="orb-core"></div>
+        <div class="orb-particles" id="particles"></div>
+      </div>
+
+      <div class="assistant-name">JARVIS</div>
+      <div class="assistant-message" id="assistantMessage">
+        À votre service, Monsieur.
+      </div>
     </section>
-    <form id="composer"><input id="prompt" autocomplete="off" placeholder="Écrivez votre demande…" aria-label="Votre demande"><button>Envoyer</button></form>
-    <div class="actions"><button data-prompt="Que peux-tu faire ?">Aide</button><button data-prompt="Quelle est la date du jour ?">Date</button><button id="speak">Lire la réponse</button></div>
-    <p class="note">Prototype local — les intégrations et l'intelligence en ligne seront ajoutées progressivement.</p>
+
+    <section class="modes">
+      <button type="button" data-mode="normal">NORMAL</button>
+      <button type="button" data-mode="focus">CONCENTRATION</button>
+      <button type="button" data-mode="gaming">GAMING</button>
+    </section>
+
+    <section class="conversation" id="conversation">
+      <div class="welcome">
+        SYSTÈME INITIALISÉ<br>
+        EN ATTENTE DE VOTRE INSTRUCTION
+      </div>
+    </section>
+
+    <form class="composer" id="composer">
+      <button type="button" id="mic" class="icon-button"
+        aria-label="Parler">🎙</button>
+
+      <input
+        id="prompt"
+        type="text"
+        placeholder="Parlez à JARVIS..."
+        autocomplete="off"
+      >
+
+      <button type="submit" class="send-button"
+        aria-label="Envoyer">➤</button>
+    </form>
+
+    <footer class="footer">
+      <span>JARVIS SYSTEM 1.0</span>
+      <span id="memoryStatus">MÉMOIRE LOCALE</span>
+    </footer>
+
   </main>
-  <script src="app.js"></script>
+
+  <script src="app.js" defer></script>
 </body>
 </html>
+
